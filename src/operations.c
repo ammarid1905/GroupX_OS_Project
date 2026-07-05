@@ -90,8 +90,22 @@ void* local_sort_worker(void* arg) {
 // --- DEMONSTRATING TASK PARALLELISM ---
 // Coordinates parallel execution layers and sub-sorting steps using condition variables
 void run_parallel_analytics_sort(int32_t *array, int size, int total_threads) {
-    pthread_t *threads = malloc(total_threads * sizeof(pthread_t));
-    SortTaskArg *args = malloc(total_threads * sizeof(SortTaskArg));
+    if (!array || size <= 1) return;
+    if (total_threads < 1) total_threads = 1;
+    if (total_threads > size) total_threads = size;
+
+    pthread_t *threads = malloc((size_t)total_threads * sizeof(*threads));
+    SortTaskArg *args = malloc((size_t)total_threads * sizeof(*args));
+    if (!threads || !args) {
+        free(threads);
+        free(args);
+        serial_quicksort(array, 0, size - 1);
+        return;
+    }
+
+    pthread_mutex_lock(&sort_mutex);
+    completed_sort_tasks = 0;
+    pthread_mutex_unlock(&sort_mutex);
 
     int chunk_size = size / total_threads;
 
