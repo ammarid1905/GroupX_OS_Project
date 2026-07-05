@@ -382,11 +382,3 @@ void execute_student_c_analytics(int32_t* array, size_t total_elements, int num_
     }
 }
 
-
-^O
-
-^O
-
-x
-
-
